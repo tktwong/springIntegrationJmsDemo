@@ -13,6 +13,9 @@ import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 
+import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
+import org.springframework.jms.support.converter.MessageConverter;
+import org.springframework.jms.support.converter.MessageType;
 import org.springframework.jndi.JndiTemplate;
 
 @Configuration
@@ -20,8 +23,8 @@ import org.springframework.jndi.JndiTemplate;
 public class JMSConfigurer  {
 
     private String url = "t3://localhost:7001";
-    private String connectionFactoryName = "jms/DpmsServiceQcf";
-    private String mpiResponseQueue = "jms/DpmsServiceQue";
+    private String connectionFactoryName = "jms/DpmsRequestQcf";
+    private String requestQueue = "jms/DpmsRequestQue";
 
     private Properties getJNDiProperties() {
         final Properties jndiProps = new Properties();
@@ -54,9 +57,18 @@ public class JMSConfigurer  {
     }
 
     @Bean
-    public Destination mpiResponseQueue() {
-        return lookupByJndiTemplate(mpiResponseQueue, Destination.class);
+    public Destination requestDestination() {
+        return lookupByJndiTemplate(requestQueue, Destination.class);
     }
+
+    @Bean // Serialize message content to json using TextMessage
+    public MessageConverter jacksonJmsMessageConverter() {
+        MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
+        converter.setTargetType(MessageType.TEXT);
+        converter.setTypeIdPropertyName("_type");
+        return converter;
+    }
+
     /**
      *
      * @param jndiName

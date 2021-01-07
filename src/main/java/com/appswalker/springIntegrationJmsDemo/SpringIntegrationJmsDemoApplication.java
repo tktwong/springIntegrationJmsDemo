@@ -5,14 +5,13 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.Bean;
-import org.springframework.integration.annotation.Gateway;
 import org.springframework.integration.annotation.IntegrationComponentScan;
-import org.springframework.integration.annotation.MessagingGateway;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.jms.dsl.Jms;
+import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 
@@ -25,7 +24,9 @@ public class SpringIntegrationJmsDemoApplication {
 	@Autowired
 	private javax.jms.ConnectionFactory queueConnectionFactory;
 	@Autowired
-	private Destination mpiResponseQueue;
+	private Destination requestDestination;
+	@Autowired
+	private MessageConverter jacksonJmsMessageConverter;
 
 	public static void main(String[] args) {
 		SpringApplication.run(SpringIntegrationJmsDemoApplication.class, args);
@@ -39,7 +40,7 @@ public class SpringIntegrationJmsDemoApplication {
 	public IntegrationFlow jmsReader() {
 		return IntegrationFlows
 				.from(Jms.messageDrivenChannelAdapter(this.queueConnectionFactory)
-						.destination(this.mpiResponseQueue))
+						.destination(this.requestDestination))
 				.channel("queueReader")
 				.get();
 	}
@@ -53,7 +54,7 @@ public class SpringIntegrationJmsDemoApplication {
 	public IntegrationFlow outboundFlow() {
 		return IntegrationFlows
 				.from(requests())
-				.handle(Jms.outboundAdapter(this.queueConnectionFactory).destination(this.mpiResponseQueue))
+				.handle(Jms.outboundAdapter(this.queueConnectionFactory).destination(this.requestDestination))
 				.get();
 	}
 
