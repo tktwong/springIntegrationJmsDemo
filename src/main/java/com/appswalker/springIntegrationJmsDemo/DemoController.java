@@ -31,8 +31,7 @@ public class DemoController {
                 random.nextInt());
         /*
         * TODO adding message channel as sender*/
-        outboundGateway.sendOrder(order);
-        return "OK";
+        return outboundGateway.sendOrder(order);
 //        log.info("--------- Sending {} ", order);
 //        Shipment shipment = clientGateway.sendAndReceive(order);
 //        log.info("--------- Received {} ", shipment);

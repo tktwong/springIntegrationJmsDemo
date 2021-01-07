@@ -6,5 +6,8 @@ import org.springframework.integration.annotation.MessagingGateway;
 @MessagingGateway(name = "outboundGateway")
 public interface OutboundGateway {
     @Gateway(requestChannel = "requests")
-    void sendOrder(final Order order);
+    String sendOrder(final Order order);
+
+//    @Gateway(requestChannel = "replies")
+//    String replyOrder(final Order order);
 }

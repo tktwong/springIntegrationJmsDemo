@@ -8,12 +8,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
+import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
+import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.integration.jms.dsl.Jms;
 import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
+import sun.security.krb5.internal.crypto.Des;
 
 import javax.jms.Destination;
 
@@ -26,6 +29,8 @@ public class SpringIntegrationJmsDemoApplication {
 	@Autowired
 	private Destination requestDestination;
 	@Autowired
+	private Destination replyDestination;
+	@Autowired
 	private MessageConverter jacksonJmsMessageConverter;
 
 	public static void main(String[] args) {
@@ -37,29 +42,25 @@ public class SpringIntegrationJmsDemoApplication {
 	}
 
 	@Bean
-	public IntegrationFlow jmsReader() {
-		return IntegrationFlows
-				.from(Jms.messageDrivenChannelAdapter(this.queueConnectionFactory)
-						.destination(this.requestDestination))
-				.channel("queueReader")
-				.get();
+	public IntegrationFlow requestFlow() {
+		return IntegrationFlows.from("requests")
+				.handle(Jms.outboundGateway(this.queueConnectionFactory)
+						.requestDestination(this.requestDestination)
+						.correlationKey("JMSCorrelationID"))
+						.get();
 	}
 
 	@Bean
-	public MessageChannel requests() {
-		return new DirectChannel();
-	}
-
-	@Bean
-	public IntegrationFlow outboundFlow() {
-		return IntegrationFlows
-				.from(requests())
-				.handle(Jms.outboundAdapter(this.queueConnectionFactory).destination(this.requestDestination))
+	public IntegrationFlow responseFlow() {
+		return IntegrationFlows.from(Jms.inboundGateway(this.queueConnectionFactory)
+				.destination(this.replyDestination))
+				.channel("replies")
 				.get();
 	}
 
-	@ServiceActivator(inputChannel = "queueReader")
-	public void Print(Message<?> msg)  {
-		System.out.println(msg.getPayload().toString());
+	@ServiceActivator(inputChannel = "replies")
+	public String receive(Order order) {
+		System.out.println("receive:" + order);
+		return "ok";
 	}
 }
