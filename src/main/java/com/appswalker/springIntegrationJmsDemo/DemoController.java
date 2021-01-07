@@ -19,6 +19,9 @@ import java.util.UUID;
 @Slf4j
 public class DemoController {
 
+    @Autowired
+    OutboundGateway outboundGateway;
+
     @GetMapping(value = "/send")
     public String send() throws JMSException {
         Random random = new Random();
@@ -28,7 +31,7 @@ public class DemoController {
                 random.nextInt());
         /*
         * TODO adding message channel as sender*/
-
+        outboundGateway.sendOrder(order);
         return "OK";
 //        log.info("--------- Sending {} ", order);
 //        Shipment shipment = clientGateway.sendAndReceive(order);
