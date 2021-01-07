@@ -21,7 +21,7 @@ import org.springframework.jndi.JndiTemplate;
 
 @Configuration
 @EnableJms
-public class JMSConfigurer  {
+public class JmsConfig {
 
     private String url = "t3://localhost:7001";
     private String connectionFactoryName = "jms/DpmsRequestQcf";

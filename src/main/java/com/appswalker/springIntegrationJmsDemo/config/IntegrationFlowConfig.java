@@ -8,10 +8,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
+import org.springframework.integration.handler.GenericHandler;
 import org.springframework.integration.jms.dsl.Jms;
 import org.springframework.jms.support.converter.MessageConverter;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.MessagingException;
 
 import javax.jms.Destination;
+import java.util.Map;
 
 @Configuration
 public class IntegrationFlowConfig {
@@ -46,4 +50,18 @@ public class IntegrationFlowConfig {
         System.out.println("receive: " + order);
         return new Shipment(order.getId(), order.getTo());
     }
+
+    @Bean
+    public IntegrationFlow errorFlow() {
+        return IntegrationFlows.from("requestErrorChannel")
+                .handle(new GenericHandler<MessagingException>() {
+                    @Override
+                    public String handle(MessagingException e, MessageHeaders messageHeaders) {
+                        System.out.println(messageHeaders);
+                        return "Error";
+                    }
+                })
+                .get();
+    }
+
 }

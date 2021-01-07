@@ -5,7 +5,7 @@ import com.appswalker.springIntegrationJmsDemo.model.Shipment;
 import org.springframework.integration.annotation.Gateway;
 import org.springframework.integration.annotation.MessagingGateway;
 
-@MessagingGateway(name = "outboundGateway")
+@MessagingGateway(name = "outboundGateway", errorChannel = "requestErrorChannel")
 public interface OutboundGateway {
     @Gateway(requestChannel = "requests")
     Shipment sendAndReceive(final Order order);
