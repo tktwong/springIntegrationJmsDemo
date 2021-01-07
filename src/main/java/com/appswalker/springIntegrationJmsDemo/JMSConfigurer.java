@@ -13,6 +13,7 @@ import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 
+import org.springframework.jms.connection.CachingConnectionFactory;
 import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
 import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.jms.support.converter.MessageType;
@@ -41,7 +42,7 @@ public class JMSConfigurer  {
     @Bean
     public ConnectionFactory queueConnectionFactory() {
         // JNDI connection factory name stored in weblogic.
-        return lookupByJndiTemplate(connectionFactoryName, QueueConnectionFactory.class);
+        return new CachingConnectionFactory(lookupByJndiTemplate(connectionFactoryName, QueueConnectionFactory.class));
     }
 
     /**
