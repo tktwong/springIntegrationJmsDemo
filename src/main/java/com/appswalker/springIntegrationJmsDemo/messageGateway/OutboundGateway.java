@@ -1,13 +1,12 @@
-package com.appswalker.springIntegrationJmsDemo;
+package com.appswalker.springIntegrationJmsDemo.messageGateway;
 
+import com.appswalker.springIntegrationJmsDemo.model.Order;
+import com.appswalker.springIntegrationJmsDemo.model.Shipment;
 import org.springframework.integration.annotation.Gateway;
 import org.springframework.integration.annotation.MessagingGateway;
 
 @MessagingGateway(name = "outboundGateway")
 public interface OutboundGateway {
     @Gateway(requestChannel = "requests")
-    String sendOrder(final Order order);
-
-//    @Gateway(requestChannel = "replies")
-//    String replyOrder(final Order order);
+    Shipment sendAndReceive(final Order order);
 }

@@ -1,4 +1,4 @@
-package com.appswalker.springIntegrationJmsDemo;
+package com.appswalker.springIntegrationJmsDemo.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

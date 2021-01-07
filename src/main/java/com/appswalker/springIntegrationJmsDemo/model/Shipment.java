@@ -1,4 +1,4 @@
-package com.appswalker.springIntegrationJmsDemo;
+package com.appswalker.springIntegrationJmsDemo.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
