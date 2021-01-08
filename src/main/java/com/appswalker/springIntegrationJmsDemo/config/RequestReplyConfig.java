@@ -31,8 +31,9 @@ public class RequestReplyConfig {
         return IntegrationFlows.from(IntegrationConstant.requests)
                 .handle(Jms.outboundGateway(this.queueConnectionFactory)
                         .requestDestination(this.requestDestination)
-                        .jmsMessageConverter(this.jacksonJmsMessageConverter)
-                        .correlationKey("JMSCorrelationID"))
+                                .jmsMessageConverter(this.jacksonJmsMessageConverter)
+                        .correlationKey("JMSCorrelationID"), e->e.requiresReply(true)
+                        )
                 .get();
     }
 
