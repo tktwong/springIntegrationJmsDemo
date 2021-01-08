@@ -30,9 +30,10 @@ public class IntegrationFlowConfig {
 
     @Bean
     public IntegrationFlow requestFlow() {
-        return IntegrationFlows.from("requests")
+        return IntegrationFlows.from(IntegrationConstant.requests)
                 .handle(Jms.outboundGateway(this.queueConnectionFactory)
                         .requestDestination(this.requestDestination)
+                        .jmsMessageConverter(this.jacksonJmsMessageConverter)
                         .correlationKey("JMSCorrelationID"))
                 .get();
     }
@@ -40,12 +41,13 @@ public class IntegrationFlowConfig {
     @Bean
     public IntegrationFlow responseFlow() {
         return IntegrationFlows.from(Jms.inboundGateway(this.queueConnectionFactory)
-                .destination(this.requestDestination))
-                .channel("replies")
+                .destination(this.requestDestination)
+                .jmsMessageConverter(this.jacksonJmsMessageConverter))
+                .channel(IntegrationConstant.replies)
                 .get();
     }
 
-    @ServiceActivator(inputChannel = "replies")
+    @ServiceActivator(inputChannel = IntegrationConstant.replies)
     public Shipment sendAndReceive(Order order) {
         System.out.println("receive: " + order);
         return new Shipment(order.getId(), order.getTo());
@@ -53,7 +55,7 @@ public class IntegrationFlowConfig {
 
     @Bean
     public IntegrationFlow errorFlow() {
-        return IntegrationFlows.from("requestErrorChannel")
+        return IntegrationFlows.from(IntegrationConstant.errors)
                 .handle(new GenericHandler<MessagingException>() {
                     @Override
                     public String handle(MessagingException e, MessageHeaders messageHeaders) {
