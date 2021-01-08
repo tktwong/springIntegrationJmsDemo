@@ -18,13 +18,11 @@ import javax.jms.Destination;
 import java.util.Map;
 
 @Configuration
-public class IntegrationFlowConfig {
+public class RequestReplyConfig {
     @Autowired
     private javax.jms.ConnectionFactory queueConnectionFactory;
     @Autowired
     private Destination requestDestination;
-    @Autowired
-    private Destination replyDestination;
     @Autowired
     private MessageConverter jacksonJmsMessageConverter;
 

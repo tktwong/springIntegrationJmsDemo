@@ -21,14 +21,23 @@ public class DemoController {
     @Autowired
     OutboundGateway outboundGateway;
 
-    @GetMapping(value = "/send")
-    public ResponseEntity<Shipment> send() throws JMSException {
+    private Order getRandomOrder() {
         Random random = new Random();
-        Order order = new Order(System.currentTimeMillis(),
+        return new Order(System.currentTimeMillis(),
                 UUID.randomUUID().toString(),
                 UUID.randomUUID().toString(),
                 random.nextInt());
-        return new ResponseEntity<>(outboundGateway.sendAndReceive(order), HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/send")
+    public ResponseEntity<Shipment> send() throws JMSException {
+        return new ResponseEntity<>(outboundGateway.sendAndReceive(getRandomOrder()), HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/asyncQueProduce")
+    public ResponseEntity<String> asyncProduce() throws JMSException {
+        outboundGateway.asyncSendQue(getRandomOrder());
+        return new ResponseEntity<>("produced!", HttpStatus.OK);
     }
 }
 

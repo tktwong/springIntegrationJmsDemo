@@ -10,4 +10,7 @@ import org.springframework.integration.annotation.MessagingGateway;
 public interface OutboundGateway {
     @Gateway(requestChannel = IntegrationConstant.requests)
     Shipment sendAndReceive(final Order order);
+
+    @Gateway(requestChannel = IntegrationConstant.services)
+    void asyncSendQue(final Order order);
 }

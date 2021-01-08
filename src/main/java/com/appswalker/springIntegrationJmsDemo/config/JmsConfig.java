@@ -26,6 +26,8 @@ public class JmsConfig {
     private String url = "t3://localhost:7001";
     private String connectionFactoryName = "jms/DpmsRequestQcf";
     private String requestQueue = "jms/DpmsRequestQue";
+    private String dpmsServiceQcfJndi = "jms/DpmsServiceQcf";
+    private String dpmsServiceQueJndi = "jms/DpmsServiceQue";
 
     private Properties getJNDiProperties() {
         final Properties jndiProps = new Properties();
@@ -45,6 +47,11 @@ public class JmsConfig {
         return new CachingConnectionFactory(lookupByJndiTemplate(connectionFactoryName, QueueConnectionFactory.class));
     }
 
+    @Bean
+    public ConnectionFactory dpmsServiceQcf() {
+        return new CachingConnectionFactory(lookupByJndiTemplate(dpmsServiceQcfJndi, QueueConnectionFactory.class));
+    }
+
     /**
      * Create InitialContext.
      *
@@ -60,6 +67,11 @@ public class JmsConfig {
     @Bean
     public Destination requestDestination() {
         return lookupByJndiTemplate(requestQueue, Destination.class);
+    }
+
+    @Bean
+    public Destination dpmsServiceQue() {
+        return lookupByJndiTemplate(dpmsServiceQueJndi, Destination.class);
     }
 
     @Bean // Serialize message content to json using TextMessage
