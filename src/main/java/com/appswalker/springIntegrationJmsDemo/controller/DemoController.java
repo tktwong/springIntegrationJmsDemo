@@ -39,5 +39,11 @@ public class DemoController {
         outboundGateway.asyncSendQue(getRandomOrder());
         return new ResponseEntity<>("produced!", HttpStatus.OK);
     }
+
+    @GetMapping(value = "/asyncPublish")
+    public ResponseEntity<String> asyncPublish() throws JMSException {
+        outboundGateway.publish(getRandomOrder());
+        return new ResponseEntity<>("published!", HttpStatus.OK);
+    }
 }
 

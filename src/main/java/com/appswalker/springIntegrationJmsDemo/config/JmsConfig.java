@@ -5,9 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.annotation.EnableJms;
 
 import java.util.Properties;
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-import javax.jms.QueueConnectionFactory;
+import javax.jms.*;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
@@ -28,6 +26,8 @@ public class JmsConfig {
     private String requestQueue = "jms/DpmsRequestQue";
     private String dpmsServiceQcfJndi = "jms/DpmsServiceQcf";
     private String dpmsServiceQueJndi = "jms/DpmsServiceQue";
+    private String dpmsServiceTcfJndi = "jms/DpmsServiceTcf";
+    private String dpmsServiceTopicJndi = "jms/DpmsServiceTopic";
 
     private Properties getJNDiProperties() {
         final Properties jndiProps = new Properties();
@@ -52,6 +52,11 @@ public class JmsConfig {
         return new CachingConnectionFactory(lookupByJndiTemplate(dpmsServiceQcfJndi, QueueConnectionFactory.class));
     }
 
+    @Bean
+    public ConnectionFactory dpmsServiceTcf() {
+        return new CachingConnectionFactory(lookupByJndiTemplate(dpmsServiceTcfJndi, TopicConnectionFactory.class));
+    }
+
     /**
      * Create InitialContext.
      *
@@ -72,6 +77,11 @@ public class JmsConfig {
     @Bean
     public Destination dpmsServiceQue() {
         return lookupByJndiTemplate(dpmsServiceQueJndi, Destination.class);
+    }
+
+    @Bean
+    public Destination dpmsServiceTopic() {
+        return lookupByJndiTemplate(dpmsServiceTopicJndi, Topic.class);
     }
 
     @Bean // Serialize message content to json using TextMessage

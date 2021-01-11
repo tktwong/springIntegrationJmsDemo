@@ -13,4 +13,7 @@ public interface OutboundGateway {
 
     @Gateway(requestChannel = IntegrationConstant.services)
     void asyncSendQue(final Order order);
+
+    @Gateway(requestChannel = IntegrationConstant.publishes)
+    void publish(final Order order);
 }

@@ -1,14 +1,11 @@
 package com.appswalker.springIntegrationJmsDemo.config;
 
-import com.appswalker.springIntegrationJmsDemo.model.Order;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.jms.dsl.Jms;
-import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.MessagingException;
@@ -17,33 +14,35 @@ import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 
 @Configuration
-public class QueueConfig {
+public class TopicConfig {
     @Autowired
-    private ConnectionFactory dpmsServiceQcf;
+    private ConnectionFactory dpmsServiceTcf;
     @Autowired
-    private Destination dpmsServiceQue;
-    @Autowired
-    private MessageConverter jacksonJmsMessageConverter;
+    private Destination dpmsServiceTopic;
 
     @Bean
-    public IntegrationFlow outboundFlow() {
+    public IntegrationFlow pubFlow() {
         return IntegrationFlows
-                .from(IntegrationConstant.services)
-                .handle(Jms.outboundAdapter(this.dpmsServiceQcf).destination(this.dpmsServiceQue))
+                .from(IntegrationConstant.publishes)
+                .handle(Jms.outboundAdapter(this.dpmsServiceTcf)
+                        .destination(this.dpmsServiceTopic))
                 .get();
     }
 
     @Bean
-    public IntegrationFlow dpmsServiceQueReader() {
+    public IntegrationFlow dpmsServiceTopicReader() {
         return IntegrationFlows
-                .from(Jms.messageDrivenChannelAdapter(this.dpmsServiceQcf)
-                        .destination(this.dpmsServiceQue)
+                .from(Jms.messageDrivenChannelAdapter(this.dpmsServiceTcf)
+                        .destination(this.dpmsServiceTopic).configureListenerContainer(
+                                c -> {
+                                    c.sessionTransacted(true);
+                                    c.pubSubDomain(true);
+                                })
                 ).handle(new MessageHandler(){
                     public void handleMessage(Message<?> message) throws MessagingException {
-                        System.out.println("Queue: Got Message with Payload " + message.getPayload().toString());
+                        System.out.println("Topic: Got Message with Payload " + message.getPayload().toString());
                     }
                 })
                 .get();
     }
-
 }
