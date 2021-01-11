@@ -1,12 +1,13 @@
 package com.appswalker.springIntegrationJmsDemo.controller;
 
-import com.appswalker.springIntegrationJmsDemo.messageGateway.OutboundGateway;
+import com.appswalker.springIntegrationJmsDemo.message.OutboundGateway;
 import com.appswalker.springIntegrationJmsDemo.model.Order;
 import com.appswalker.springIntegrationJmsDemo.model.Shipment;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.integration.support.MessageBuilder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,9 +30,20 @@ public class DemoController {
                 random.nextInt());
     }
 
-    @GetMapping(value = "/send")
-    public ResponseEntity<Shipment> send() throws JMSException {
-        return new ResponseEntity<>(outboundGateway.sendAndReceive(getRandomOrder()), HttpStatus.OK);
+    @GetMapping(value = "/sendB2b")
+    public ResponseEntity<Shipment> sendB2b() throws JMSException {
+        return new ResponseEntity<>(outboundGateway.sendAndReceive(MessageBuilder
+                .withPayload(getRandomOrder())
+                .setHeader("ORDER_TYPE", "b2b")
+                .build()), HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/sendB2c")
+    public ResponseEntity<Shipment> sendB2c() throws JMSException {
+        return new ResponseEntity<>(outboundGateway.sendAndReceive(MessageBuilder
+                .withPayload(getRandomOrder())
+                .setHeader("ORDER_TYPE", "b2c")
+                .build()), HttpStatus.OK);
     }
 
     @GetMapping(value = "/asyncQueProduce")

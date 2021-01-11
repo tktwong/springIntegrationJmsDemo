@@ -47,10 +47,21 @@ public class RequestReplyConfig {
                 .get();
     }
 
-    @ServiceActivator(inputChannel = IntegrationConstant.replies)
-    public Shipment sendAndReceive(Order order) {
-        System.out.println("receive: " + order);
+    @ServiceActivator(inputChannel = IntegrationConstant.b2b)
+    public Shipment sendB2bAndReceive(Order order) {
+        System.out.println("b2b-receive: " + order);
         return new Shipment(order.getId(), order.getTo());
+    }
+
+    @ServiceActivator(inputChannel = IntegrationConstant.b2c)
+    public Shipment sendB2cAndReceive(Order order) {
+        System.out.println("b2c-receive: " + order);
+        return new Shipment(order.getId(), order.getTo());
+    }
+
+    @ServiceActivator(inputChannel = IntegrationConstant.nullChannel)
+    public void nullChannel(String unhandledMessage) {
+        System.out.println(String.format("what is it? [%s]", unhandledMessage));
     }
 
     @Bean
