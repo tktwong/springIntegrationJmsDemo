@@ -32,7 +32,8 @@ public class RequestReplyConfig {
                 .handle(Jms.outboundGateway(this.queueConnectionFactory)
                         .requestDestination(this.requestDestination)
                                 .jmsMessageConverter(this.jacksonJmsMessageConverter)
-                        .correlationKey("JMSCorrelationID"), e->e.requiresReply(true)
+                        .correlationKey("JMSCorrelationID"), //https://jira.spring.io/browse/INT-3405
+                        e->e.requiresReply(true)
                         )
                 .get();
     }
