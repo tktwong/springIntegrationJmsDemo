@@ -7,11 +7,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
+import org.springframework.integration.handler.GenericHandler;
 import org.springframework.integration.jms.dsl.Jms;
 import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.MessagingException;
+import org.springframework.messaging.support.GenericMessage;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -38,9 +41,11 @@ public class QueueConfig {
         return IntegrationFlows
                 .from(Jms.messageDrivenChannelAdapter(this.dpmsServiceQcf)
                         .destination(this.dpmsServiceQue)
-                ).handle(new MessageHandler(){
-                    public void handleMessage(Message<?> message) throws MessagingException {
-                        System.out.println("Queue: Got Message with Payload " + message.getPayload().toString());
+                ).handle(new GenericHandler<Order>(){
+                    @Override
+                    public Object handle(Order order, MessageHeaders messageHeaders) {
+                        System.out.println(order);
+                        return null;
                     }
                 })
                 .get();
