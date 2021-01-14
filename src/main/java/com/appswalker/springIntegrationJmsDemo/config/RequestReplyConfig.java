@@ -35,9 +35,9 @@ public class RequestReplyConfig {
 
     @Bean
     @ServiceActivator(inputChannel = IntegrationConstant.requests)
-    public JmsOutboundGateway jmsGateway(ConnectionFactory queueConnectionFactory) {
+    public JmsOutboundGateway jmsGateway() {
         JmsOutboundGateway gateway = new JmsOutboundGateway();
-        gateway.setConnectionFactory(queueConnectionFactory);
+        gateway.setConnectionFactory(this.queueConnectionFactory);
         gateway.setRequestDestination(this.dpmsRequestQue);
         gateway.setCorrelationKey("JMSCorrelationID");
         gateway.setSendTimeout(100L);
@@ -47,9 +47,9 @@ public class RequestReplyConfig {
     }
 
     @Bean
-    public DefaultMessageListenerContainer responder(ConnectionFactory queueConnectionFactory) {
+    public DefaultMessageListenerContainer responder() {
         DefaultMessageListenerContainer container = new DefaultMessageListenerContainer();
-        container.setConnectionFactory(queueConnectionFactory);
+        container.setConnectionFactory(this.queueConnectionFactory);
         container.setDestination(this.dpmsRequestQue);
         MessageListenerAdapter adapter = new MessageListenerAdapter(new Object() {
             @SuppressWarnings("unused")
