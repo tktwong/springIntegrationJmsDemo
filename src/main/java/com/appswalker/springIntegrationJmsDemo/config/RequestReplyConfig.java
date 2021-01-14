@@ -2,79 +2,62 @@ package com.appswalker.springIntegrationJmsDemo.config;
 
 import com.appswalker.springIntegrationJmsDemo.model.Order;
 import com.appswalker.springIntegrationJmsDemo.model.Shipment;
+import com.appswalker.springIntegrationJmsDemo.service.Receiver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.ServiceActivator;
-import org.springframework.integration.dsl.IntegrationFlow;
-import org.springframework.integration.dsl.IntegrationFlows;
-import org.springframework.integration.handler.GenericHandler;
-import org.springframework.integration.jms.dsl.Jms;
+import org.springframework.integration.channel.DirectChannel;
+import org.springframework.integration.jms.JmsOutboundGateway;
+import org.springframework.jms.listener.DefaultMessageListenerContainer;
+import org.springframework.jms.listener.adapter.MessageListenerAdapter;
 import org.springframework.jms.support.converter.MessageConverter;
-import org.springframework.messaging.MessageHeaders;
-import org.springframework.messaging.MessagingException;
+import org.springframework.messaging.MessageChannel;
 
+import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
-import java.util.Map;
 
 @Configuration
 public class RequestReplyConfig {
     @Autowired
     private javax.jms.ConnectionFactory queueConnectionFactory;
     @Autowired
-    private Destination requestDestination;
+    private Destination dpmsRequestQue;
     @Autowired
     private MessageConverter jacksonJmsMessageConverter;
+    @Autowired
+    private Receiver receiver;
 
     @Bean
-    public IntegrationFlow requestFlow() {
-        return IntegrationFlows.from(IntegrationConstant.requests)
-                .handle(Jms.outboundGateway(this.queueConnectionFactory)
-                        .requestDestination(this.requestDestination)
-                                .jmsMessageConverter(this.jacksonJmsMessageConverter)
-                        .correlationKey("JMSCorrelationID"), //https://jira.spring.io/browse/INT-3405
-                        e->e.requiresReply(true)
-                        )
-                .get();
+    public MessageChannel requests() {
+        return new DirectChannel();
     }
 
     @Bean
-    public IntegrationFlow responseFlow() {
-        return IntegrationFlows.from(Jms.inboundGateway(this.queueConnectionFactory)
-                .destination(this.requestDestination)
-                .jmsMessageConverter(this.jacksonJmsMessageConverter))
-                .channel(IntegrationConstant.replies)
-                .get();
-    }
-
-    @ServiceActivator(inputChannel = IntegrationConstant.b2b)
-    public Shipment sendB2bAndReceive(Order order) {
-        System.out.println("b2b-receive: " + order);
-        return new Shipment(order.getId(), order.getTo());
-    }
-
-    @ServiceActivator(inputChannel = IntegrationConstant.b2c)
-    public Shipment sendB2cAndReceive(Order order) {
-        System.out.println("b2c-receive: " + order);
-        return new Shipment(order.getId(), order.getTo());
-    }
-
-    @ServiceActivator(inputChannel = IntegrationConstant.nullChannel)
-    public void nullChannel(String unhandledMessage) {
-        System.out.println(String.format("what is it? [%s]", unhandledMessage));
+    @ServiceActivator(inputChannel = IntegrationConstant.requests)
+    public JmsOutboundGateway jmsGateway(ConnectionFactory queueConnectionFactory) {
+        JmsOutboundGateway gateway = new JmsOutboundGateway();
+        gateway.setConnectionFactory(queueConnectionFactory);
+        gateway.setRequestDestination(this.dpmsRequestQue);
+        gateway.setCorrelationKey("JMSCorrelationID");
+        gateway.setSendTimeout(100L);
+        gateway.setReceiveTimeout(100L);
+        gateway.setDeliveryPersistent(false);
+        return gateway;
     }
 
     @Bean
-    public IntegrationFlow errorFlow() {
-        return IntegrationFlows.from(IntegrationConstant.errors)
-                .handle(new GenericHandler<MessagingException>() {
-                    @Override
-                    public String handle(MessagingException e, MessageHeaders messageHeaders) {
-                        System.out.println(messageHeaders);
-                        return "Error";
-                    }
-                })
-                .get();
+    public DefaultMessageListenerContainer responder(ConnectionFactory queueConnectionFactory) {
+        DefaultMessageListenerContainer container = new DefaultMessageListenerContainer();
+        container.setConnectionFactory(queueConnectionFactory);
+        container.setDestination(this.dpmsRequestQue);
+        MessageListenerAdapter adapter = new MessageListenerAdapter(new Object() {
+            @SuppressWarnings("unused")
+            public Shipment handleMessage(Order order) {
+                return receiver.receiveMessage(order);
+            }
+        });
+        container.setMessageListener(adapter);
+        return container;
     }
-
 }

@@ -23,11 +23,11 @@ public class JmsConfig {
 
     private String url = "t3://localhost:7001";
     private String connectionFactoryName = "jms/DpmsRequestQcf";
-    private String requestQueue = "jms/DpmsRequestQue";
-    private String dpmsServiceQcfJndi = "jms/DpmsServiceQcf";
-    private String dpmsServiceQueJndi = "jms/DpmsServiceQue";
-    private String dpmsServiceTcfJndi = "jms/DpmsServiceTcf";
-    private String dpmsServiceTopicJndi = "jms/DpmsServiceTopic";
+    private String dpmsRequestQueJndiName = "jms/DpmsRequestQue";
+    private String dpmsServiceQcfJndiName = "jms/DpmsServiceQcf";
+    private String dpmsServiceQueJndiName = "jms/DpmsServiceQue";
+    private String dpmsServiceTcfJndiName = "jms/DpmsServiceTcf";
+    private String dpmsServiceTopicJndiName = "jms/DpmsServiceTopic";
 
     private Properties getJNDiProperties() {
         final Properties jndiProps = new Properties();
@@ -49,12 +49,12 @@ public class JmsConfig {
 
     @Bean
     public ConnectionFactory dpmsServiceQcf() {
-        return new CachingConnectionFactory(lookupByJndiTemplate(dpmsServiceQcfJndi, QueueConnectionFactory.class));
+        return new CachingConnectionFactory(lookupByJndiTemplate(dpmsServiceQcfJndiName, QueueConnectionFactory.class));
     }
 
     @Bean
     public ConnectionFactory dpmsServiceTcf() {
-        return new CachingConnectionFactory(lookupByJndiTemplate(dpmsServiceTcfJndi, TopicConnectionFactory.class));
+        return new CachingConnectionFactory(lookupByJndiTemplate(dpmsServiceTcfJndiName, TopicConnectionFactory.class));
     }
 
     /**
@@ -70,18 +70,18 @@ public class JmsConfig {
     }
 
     @Bean
-    public Destination requestDestination() {
-        return lookupByJndiTemplate(requestQueue, Destination.class);
+    public Destination dpmsRequestQue() {
+        return lookupByJndiTemplate(dpmsRequestQueJndiName, Destination.class);
     }
 
     @Bean
     public Destination dpmsServiceQue() {
-        return lookupByJndiTemplate(dpmsServiceQueJndi, Destination.class);
+        return lookupByJndiTemplate(dpmsServiceQueJndiName, Destination.class);
     }
 
     @Bean
     public Destination dpmsServiceTopic() {
-        return lookupByJndiTemplate(dpmsServiceTopicJndi, Topic.class);
+        return lookupByJndiTemplate(dpmsServiceTopicJndiName, Topic.class);
     }
 
     @Bean // Serialize message content to json using TextMessage
